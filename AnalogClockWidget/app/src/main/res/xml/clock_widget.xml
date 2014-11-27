@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:initialLayout="@layout/clock_widget_layout"
+    android:minHeight="100dp"
+    android:minWidth="100dp"
+    android:resizeMode="none"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="keyguard|home_screen"
+    android:configure="analogclock.widget.usp.com.analogclockwidget.ClockWidgetConfigActivity">
+</appwidget-provider>
