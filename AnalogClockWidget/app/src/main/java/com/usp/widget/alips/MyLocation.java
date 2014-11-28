@@ -1,4 +1,4 @@
-package analogclock.widget.usp.com.analogclockwidget;
+package com.usp.widget.alips;
 
 public class MyLocation {
     public String streetAddress;
@@ -6,5 +6,4 @@ public class MyLocation {
     public String city;
     public double longitude;
     public double latitude;
-    public WeatherInfo weatherInfo;
 }

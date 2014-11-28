@@ -1,7 +1,6 @@
-package analogclock.widget.usp.com.analogclockwidget;
+package com.usp.widget.alips;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -12,30 +11,54 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.RotateAnimation;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import java.io.ByteArrayOutputStream;
 
+import analogclock.widget.usp.com.alips.R;
+
 public class DetailInfoActivity extends Activity
-        implements SensorListener.CompassListener, SensorListener.LocationListener{
+        implements SensorListener.EnvironmentListener {
     private static final char DEGREE = '\u00B0';
 
     private static final int SAVE=0;
     private static final int SHARE=1;
 
-    private ProgressDialog mProgressDialog;
     private SensorListener mSensorListener;
-    private MyLocation myLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mSensorListener = new SensorListener(this, this);
-        mProgressDialog = new ProgressDialog(this);
-        mProgressDialog.setMessage("Please wait...");
-        mProgressDialog.show();
+        setContentView(R.layout.activity_on_click_extra_info);
+        registerForContextMenu(findViewById(R.id.root_container));
+        mSensorListener = new SensorListener(this);
+        ToggleButton button = (ToggleButton) findViewById(R.id.toggle_button);
+
+        if (SharedPreferencesUtil.showMoreDetails()) {
+            button.setChecked(true);
+            findViewById(R.id.details_container).setVisibility(View.VISIBLE);
+        } else {
+            button.setChecked(false);
+            findViewById(R.id.details_container).setVisibility(View.GONE);
+        }
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Is the toggle on?
+                boolean on = ((ToggleButton) v).isChecked();
+
+                if (on) {
+                    findViewById(R.id.details_container).setVisibility(View.VISIBLE);
+                    SharedPreferencesUtil.setMoreDetails(true);
+                } else {
+                    findViewById(R.id.details_container).setVisibility(View.GONE);
+                    SharedPreferencesUtil.setMoreDetails(false);
+                }
+            }
+        });
+        AppRater.appLaunched(this);
     }
 
     @Override
@@ -53,7 +76,7 @@ public class DetailInfoActivity extends Activity
         switch (item.getItemId()) {
             case SHARE:
                 String path = saveImage();
-                Toast.makeText(this, "Saved", Toast.LENGTH_LONG);
+                Toast.makeText(this, "Saved", Toast.LENGTH_LONG).show();
                 Uri screenShotUri = Uri.parse(path);
                 Intent emailIntent1 = new Intent(android.content.Intent.ACTION_SEND);
                 emailIntent1.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -64,7 +87,7 @@ public class DetailInfoActivity extends Activity
                 break;
             case SAVE:
                 saveImage();
-                Toast.makeText(this, "Saved", Toast.LENGTH_LONG);
+                Toast.makeText(this, "Saved", Toast.LENGTH_LONG).show();
                 break;
         }
         return super.onContextItemSelected(item);
@@ -81,6 +104,11 @@ public class DetailInfoActivity extends Activity
     protected void onPause() {
         super.onPause();
         mSensorListener.unRegister();
+    }
+
+    @Override
+    public void onBackPressed() {
+        finish();
     }
 
     @Override
@@ -125,57 +153,44 @@ public class DetailInfoActivity extends Activity
     }
 
     @Override
-    public void onPreExecute() {
-        mProgressDialog.show();
+    public void onLocationChanged(MyLocation location) {
+        if (location == null) {
+            return;
+        }
+        TextView locationView = (TextView) findViewById(R.id.line_address_txt);
+        locationView.setText(
+                String.format("%s (%s, %s)", location.streetAddress, location.city, location.country));
+
+        TextView longView = (TextView) findViewById(R.id.longitude_txt);
+        longView.setText(String.format(": %.2f", location.longitude));
+
+        TextView langView = (TextView) findViewById(R.id.latitude_txt);
+        langView.setText(String.format(": %.2f", location.latitude));
     }
 
     @Override
-    public void onPostExecute(MyLocation location) {
-        myLocation = location;
+    public void onPressureChanged(double pressure) {
+        TextView pressureView = (TextView) findViewById(R.id.pressure_txt);
+        pressureView.setText(String.format(": %.2f hPa", pressure));
+    }
 
-        if (location == null) {
-            mProgressDialog.dismiss();
-            return;
-        }
-        View view = findViewById(R.id.root_container);
-        if (view == null) {
-            setContentView(R.layout.activity_on_click_extra_info);
-            view = findViewById(R.id.root_container);
-            registerForContextMenu(view);
-            AppRater.appLaunched(this);
-        }
+    @Override
+    public void onTemperatureChanged(double temperature) {
+        TextView temperatureView = (TextView) findViewById(R.id.temperature_txt);
+        temperatureView.setText(
+                String.format(": %.2f" + DEGREE + " C", temperature));
+    }
 
-        if (location.weatherInfo != null) {
-            if (location.weatherInfo.bitmap != null) {
-                ImageView imageView = (ImageView)findViewById(R.id.weather_icon);
-                imageView.setImageBitmap(location.weatherInfo.bitmap);
-            }
-            TextView pressureView = (TextView) findViewById(R.id.pressure_txt);
-            pressureView.setText(String.format("%.2f hPa", location.weatherInfo.pressure));
+    @Override
+    public void onHumidityChanged(double humidity) {
+        TextView humidityView = (TextView) findViewById(R.id.humidity_txt);
+        humidityView.setText(String.format(": %.2f%%", humidity));
 
-            TextView humidityView = (TextView) findViewById(R.id.humidity_txt);
-            humidityView.setText(String.format("%.2f%%", location.weatherInfo.humidity));
+    }
 
-            TextView temperatureView = (TextView) findViewById(R.id.temperature_txt);
-            double temperature = location.weatherInfo.temperature;
-            temperatureView.setText(
-                    String.format("%.2f" + DEGREE + "F (%.2f" + DEGREE + " C)", temperature * 9 / 5 + 32, temperature));
-
-            double windSpeed = location.weatherInfo.windSpeed;
-            TextView windView = (TextView) findViewById(R.id.wind_txt);
-            windView.setText(String.format("%.2f miles/sec, %s \n(%.2f km/s)", windSpeed/1.6,
-                    location.weatherInfo.windDirection + DEGREE, windSpeed));
-        }
-        TextView locationView = (TextView) findViewById(R.id.city_field);
-        TextView lineAddressView = (TextView) findViewById(R.id.line_address_txt);
-        locationView.setText(
-                String.format("%s, %s",
-                        location.city, location.country));
-        lineAddressView.setText(location.streetAddress);
-
-        TextView latLongView = (TextView) findViewById(R.id.lat_long_txt);
-        latLongView.setText(String.format("(%.2f,  %.2f)",
-                location.latitude, location.longitude));
-        mProgressDialog.dismiss();
+    @Override
+    public void onLightChanged(double light) {
+        TextView humidityView = (TextView) findViewById(R.id.light_txt);
+        humidityView.setText(String.format(": %.2f lx", light));
     }
 }

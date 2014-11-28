@@ -4,133 +4,159 @@
     android:id="@+id/root_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
     android:orientation="vertical"
-    android:padding="30dp"
-    android:background="#FF0099CC">
-    <TextView
-        android:id="@+id/city_field"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:gravity="center"
-        android:text="XXXXXXX, XX"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textSize="25sp" />
-    <TextView
-        android:id="@+id/line_address_txt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:gravity="center"
-        android:text="000 xxxxxxxx xx"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textSize="15sp" />
+    android:background="@drawable/background">
 
 
-    <TextView
-        android:id="@+id/lat_long_txt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:gravity="center"
-        android:text="(00.00,  000.00)"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textSize="15sp" />
+
     <FrameLayout
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:id="@+id/compass_container">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:id="@+id/compass_container"
+            android:gravity="center"
+            android:layout_gravity="center"
             android:src="@drawable/compass_icon"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:text="@string/app_name"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textColor="#11ff0000"
+            android:textSize="100sp"
+            android:layout_height="match_parent" />
     </FrameLayout>
 
-
-    <TextClock
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:format24Hour="EEE, d MMM yyyy HH:mm"/>
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:id="@+id/details_container"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_marginBottom="20dp"
-        android:orientation="horizontal">
-        <ImageView
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:id="@+id/weather_icon"
-            android:layout_marginRight="20dp"
-            android:src="@drawable/ic_launcher"/>
-        <TextView
-            android:id="@+id/temperature_txt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="00.00 F (00.00 F)"
-            android:layout_centerHorizontal="true"
-            android:textSize="15sp"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            />
-    </LinearLayout>
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:animateLayoutChanges="true"
+        android:orientation="vertical">
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_marginBottom="20dp"
-        android:orientation="horizontal">
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="20dp"
-            android:src="@drawable/droplet"/>
         <TextView
-            android:id="@+id/humidity_txt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="00%"
-            android:layout_centerHorizontal="true"
-            android:textSize="15sp"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            />
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:src="@drawable/pressure"/>
-        <TextView
-            android:id="@+id/pressure_txt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0000 hPa"
-            android:layout_centerHorizontal="true"
-            android:textSize="15sp"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            />
-    </LinearLayout>
+            android:id="@+id/line_address_txt"
+            android:text="@string/sensor_not_found"
+            style="@style/medium_font"/>
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_marginBottom="20dp"
-        android:orientation="horizontal">
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/wind"/>
-        <TextView
-            android:id="@+id/wind_txt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0.00 miles/sec, 000 \n (0.00 km/sec)"
-            android:layout_centerHorizontal="true"
-            android:textSize="15sp"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            />
-    </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_weight="@integer/first_column_wight"
+                android:layout_width="0dp"
+                android:text="Latitude"
+                style="@style/medium_font"/>
+            <TextView
+                android:id="@+id/latitude_txt"
+                style="@style/medium_font"
+                android:layout_weight="@integer/second_column_wight"
+                android:layout_width="0dp"
+                android:text="@string/sensor_not_found" />
+        </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_weight="@integer/first_column_wight"
+                android:layout_width="0dp"
+                android:text="Longitude"
+                style="@style/medium_font"/>
+            <TextView
+                android:id="@+id/longitude_txt"
+                style="@style/medium_font"
+                android:layout_weight="@integer/second_column_wight"
+                android:layout_width="0dp"
+                android:text="@string/sensor_not_found" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_weight="@integer/first_column_wight"
+                android:layout_width="0dp"
+                android:text="Temperature"
+                style="@style/medium_font"/>
+            <TextView
+                android:id="@+id/temperature_txt"
+                style="@style/medium_font"
+                android:layout_weight="@integer/second_column_wight"
+                android:layout_width="0dp"
+                android:text="@string/sensor_not_found" />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_weight="@integer/first_column_wight"
+                android:layout_width="0dp"
+                android:text="Pressure"
+                style="@style/medium_font"/>
+            <TextView
+                android:id="@+id/pressure_txt"
+                style="@style/medium_font"
+                android:layout_weight="@integer/second_column_wight"
+                android:layout_width="0dp"
+                android:text="@string/sensor_not_found" />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_weight="@integer/first_column_wight"
+                android:layout_width="0dp"
+                android:text="Light"
+                style="@style/medium_font"/>
+            <TextView
+                android:id="@+id/light_txt"
+                style="@style/medium_font"
+                android:layout_weight="@integer/second_column_wight"
+                android:layout_width="0dp"
+                android:text="@string/sensor_not_found" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_weight="@integer/first_column_wight"
+                android:layout_width="0dp"
+                android:text="Humidity"
+                style="@style/medium_font"/>
+            <TextView
+                android:id="@+id/humidity_txt"
+                style="@style/medium_font"
+                android:layout_weight="@integer/second_column_wight"
+                android:layout_width="0dp"
+                android:text="@string/sensor_not_found" />
+        </LinearLayout>
+
+        <TextClock
+            style="@style/medium_font"
+            android:format24Hour="(EEE, d MMM yyyy HH:mm)"/>
+    </LinearLayout>
+    <ToggleButton
+        android:id="@+id/toggle_button"
+        android:layout_width="match_parent"
+        android:textOff="More Details"
+        android:textOn="Less Details"
+        android:layout_margin="5dp"
+        android:layout_height="wrap_content" />
 </LinearLayout>

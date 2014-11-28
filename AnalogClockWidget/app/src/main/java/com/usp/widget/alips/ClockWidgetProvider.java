@@ -1,4 +1,4 @@
-package analogclock.widget.usp.com.analogclockwidget;
+package com.usp.widget.alips;
 
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import android.widget.RemoteViews;
+
+import analogclock.widget.usp.com.alips.R;
 
 public class ClockWidgetProvider extends AppWidgetProvider {
 

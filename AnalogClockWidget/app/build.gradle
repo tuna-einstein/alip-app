@@ -5,7 +5,7 @@ android {
     buildToolsVersion "20.0.0"
 
     defaultConfig {
-        applicationId "analogclock.widget.usp.com.analogclockwidget"
+        applicationId "analogclock.widget.usp.com.alips"
         minSdkVersion 17
         targetSdkVersion 20
         versionCode 1

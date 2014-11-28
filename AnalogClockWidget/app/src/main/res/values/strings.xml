@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">ALIP</string>
+    <string name="app_name">ALIPS</string>
     <string name="title_activity_display_message">DisplayMessageActivity</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
@@ -12,4 +12,6 @@
     <string name="rta_dialog_ok">Rate now</string>
     <string name="rta_dialog_cancel">Remind later</string>
     <string name="rta_dialog_no">No, thanks</string>
+
+    <string name="sensor_not_found">: Not found</string>
 </resources>

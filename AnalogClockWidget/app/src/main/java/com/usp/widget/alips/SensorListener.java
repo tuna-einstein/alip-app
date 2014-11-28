@@ -1,7 +1,6 @@
-package analogclock.widget.usp.com.analogclockwidget;
+package com.usp.widget.alips;
 
 import android.content.Context;
-import android.graphics.BitmapFactory;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -20,7 +19,6 @@ import android.view.animation.RotateAnimation;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -39,8 +37,15 @@ public class SensorListener implements LocationListener, SensorEventListener {
 
 
     private SensorManager mSensorManager;
+
     private Sensor mAccelerometer;
     private Sensor mMagnetometer;
+    private Sensor mTemperatureMeter;
+    private Sensor mPressureMeter;
+    private Sensor mHumidityMeter;
+    private Sensor mLightMeter;
+
+
     private float[] mLastAccelerometer = new float[3];
     private float[] mLastMagnetometer = new float[3];
     private boolean mLastAccelerometerSet = false;
@@ -52,17 +57,20 @@ public class SensorListener implements LocationListener, SensorEventListener {
     private LocationManager mLocationManager;
     private Context mContext;
 
-    private final LocationListener mLocationListener;
-    private final CompassListener mCompassListener;
+    private final EnvironmentListener mListener;
 
-    public SensorListener(LocationListener locationListener, CompassListener compassListener) {
-        mLocationListener = locationListener;
-        mCompassListener = compassListener;
+    public SensorListener(EnvironmentListener listener) {
+        mListener = listener;
     }
 
     public void unRegister() {
         mSensorManager.unregisterListener(this, mAccelerometer);
         mSensorManager.unregisterListener(this, mMagnetometer);
+        mSensorManager.unregisterListener(this, mTemperatureMeter);
+        mSensorManager.unregisterListener(this, mHumidityMeter);
+        mSensorManager.unregisterListener(this, mPressureMeter);
+        mSensorManager.unregisterListener(this, mLightMeter);
+
         mLocationManager.removeUpdates(this);
     }
 
@@ -75,8 +83,30 @@ public class SensorListener implements LocationListener, SensorEventListener {
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
+        mTemperatureMeter = mSensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE);
+        mLightMeter = mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+        mHumidityMeter = mSensorManager.getDefaultSensor(Sensor.TYPE_RELATIVE_HUMIDITY);
+        mPressureMeter = mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
+
         mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_UI);
         mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_UI);
+
+        if (mTemperatureMeter != null) {
+            mSensorManager.registerListener(this, mTemperatureMeter, SensorManager.SENSOR_DELAY_UI);
+        } else {
+            Log.w("umasankar", "Temperature sensor not found");
+        }
+
+        if (mPressureMeter != null) {
+            mSensorManager.registerListener(this, mPressureMeter, SensorManager.SENSOR_DELAY_UI);
+        }
+
+        if (mHumidityMeter != null) {
+            mSensorManager.registerListener(this, mHumidityMeter, SensorManager.SENSOR_DELAY_UI);
+        }
+        if (mLightMeter != null) {
+            mSensorManager.registerListener(this, mLightMeter, SensorManager.SENSOR_DELAY_UI);
+        }
 
         boolean isGPSEnabled = mLocationManager
                 .isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -103,19 +133,13 @@ public class SensorListener implements LocationListener, SensorEventListener {
     }
 
     @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
+    public void onStatusChanged(String provider, int status, Bundle extras) {}
 
     @Override
-    public void onProviderEnabled(String provider) {
-
-    }
+    public void onProviderEnabled(String provider) {}
 
     @Override
-    public void onProviderDisabled(String provider) {
-
-    }
+    public void onProviderDisabled(String provider) {}
 
     @Override
     public void onSensorChanged(SensorEvent event) {
@@ -125,7 +149,16 @@ public class SensorListener implements LocationListener, SensorEventListener {
         } else if (event.sensor == mMagnetometer) {
             System.arraycopy(event.values, 0, mLastMagnetometer, 0, event.values.length);
             mLastMagnetometerSet = true;
+        } else if (event.sensor == mTemperatureMeter) {
+            mListener.onTemperatureChanged(event.values[0]);
+        } else if (event.sensor == mPressureMeter) {
+            mListener.onPressureChanged(event.values[0]);
+        } else if (event.sensor == mLightMeter) {
+            mListener.onLightChanged(event.values[0]);
+        } else if (event.sensor == mHumidityMeter) {
+            mListener.onHumidityChanged(event.values[0]);
         }
+
         if (mLastAccelerometerSet && mLastMagnetometerSet) {
             SensorManager.getRotationMatrix(mR, null, mLastAccelerometer, mLastMagnetometer);
             SensorManager.getOrientation(mR, mOrientation);
@@ -142,28 +175,28 @@ public class SensorListener implements LocationListener, SensorEventListener {
 
             ra.setFillAfter(true);
             mCurrentDegree = -azimuthInDegress;
-            mCompassListener.onDirectionChange(ra);
+            mListener.onDirectionChange(ra);
         }
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
-    public static interface CompassListener {
+    public static interface EnvironmentListener {
         void onDirectionChange(RotateAnimation animation);
-    }
-
-    public static interface LocationListener {
-        void onPreExecute();
-        void onPostExecute(MyLocation location);
+        void onLocationChanged(MyLocation location);
+        void onPressureChanged(double pressure);
+        void onTemperatureChanged(double temperature);
+        void onHumidityChanged(double humidity);
+        void onLightChanged(double light);
     }
 
     private class GetLocationTask extends AsyncTask<Location, Void, MyLocation> {
 
+        private WeatherInfo mWeatherInfo;
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            mLocationListener.onPreExecute();
         }
 
         @Override
@@ -194,57 +227,67 @@ public class SensorListener implements LocationListener, SensorEventListener {
             location.longitude = address.getLongitude();
             location.streetAddress = address.getMaxAddressLineIndex() > 0 ?
                     address.getAddressLine(0) : "";
-            location.weatherInfo = fetchWeather(loc);
+
+            if (mTemperatureMeter == null || mPressureMeter == null || mHumidityMeter == null) {
+                mWeatherInfo = fetchWeather(loc);
+            }
             return location;
         }
 
         @Override
         protected void onPostExecute(MyLocation location) {
-            mLocationListener.onPostExecute(location);
+            mListener.onLocationChanged(location);
+            if (mWeatherInfo == null) {
+                return;
+            }
+            if (mTemperatureMeter == null) {
+                mListener.onTemperatureChanged(mWeatherInfo.temperature);
+            }
+            if (mHumidityMeter == null) {
+                mListener.onHumidityChanged(mWeatherInfo.humidity);
+            }
+            if (mPressureMeter == null) {
+                mListener.onPressureChanged(mWeatherInfo.pressure);
+            }
         }
+    }
 
-        private WeatherInfo fetchWeather(Location location) {
-            HttpURLConnection connection = null;
 
-            try {
-                URL url = new URL(String.format(OPEN_WEATHER_MAP_API, location.getLatitude(), location.getLongitude()));
-                Log.e(LOG_PREFIX, url.toString());
-                connection = (HttpURLConnection) url.openConnection();
-                connection.addRequestProperty("x-api-key", WEATHER_API_KEY);
+    private WeatherInfo fetchWeather(Location location) {
+        HttpURLConnection connection = null;
 
-                BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(connection.getInputStream()));
-                StringBuffer json = new StringBuffer(1024);
-                String tmp = "";
-                while ((tmp = reader.readLine()) != null)
-                    json.append(tmp).append("\n");
-                reader.close();
+        try {
+            URL url = new URL(String.format(OPEN_WEATHER_MAP_API, location.getLatitude(), location.getLongitude()));
+            Log.e(LOG_PREFIX, url.toString());
+            connection = (HttpURLConnection) url.openConnection();
+            connection.addRequestProperty("x-api-key", WEATHER_API_KEY);
 
-                JSONObject data = new JSONObject(json.toString());
-                // This value will be 404 if the request was not
-                // successful
-                if (data.getInt("cod") != 200) {
-                    return null;
-                }
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(connection.getInputStream()));
+            StringBuffer json = new StringBuffer(1024);
+            String tmp = "";
+            while ((tmp = reader.readLine()) != null)
+                json.append(tmp).append("\n");
+            reader.close();
 
-                JSONObject details = data.getJSONArray("weather").getJSONObject(0);
-                JSONObject main = data.getJSONObject("main");
-                JSONObject windJson = data.getJSONObject("wind");
-
-                WeatherInfo info = new WeatherInfo();
-                info.humidity = main.getDouble("humidity");
-                info.pressure = main.getDouble("pressure");
-                info.temperature = main.getDouble("temp");
-                info.windDirection = windJson.getInt("deg");
-                info.windSpeed = windJson.getDouble("speed");
-                String imageUrl = "http://openweathermap.org/img/w/" + details.getString("icon") + ".png" ;
-                info.bitmap = BitmapFactory.decodeStream((InputStream) new URL(imageUrl).getContent());
-                return info;
-
-            } catch (Exception e) {
-                Log.e(LOG_PREFIX, e.toString());
+            JSONObject data = new JSONObject(json.toString());
+            // This value will be 404 if the request was not
+            // successful
+            if (data.getInt("cod") != 200) {
                 return null;
             }
+
+            JSONObject main = data.getJSONObject("main");
+
+            WeatherInfo info = new WeatherInfo();
+            info.humidity = main.getDouble("humidity");
+            info.pressure = main.getDouble("pressure");
+            info.temperature = main.getDouble("temp");
+            return info;
+
+        } catch (Exception e) {
+            Log.e(LOG_PREFIX, e.toString());
+            return null;
         }
     }
 }

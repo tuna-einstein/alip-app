@@ -1,4 +1,4 @@
-package analogclock.widget.usp.com.analogclockwidget;
+package com.usp.widget.alips;
 
 import android.app.Application;
 import android.content.Context;
