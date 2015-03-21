@@ -1,9 +1,12 @@
 package com.usp.widget.alips;
 
-import android.app.Application;
 import android.content.Context;
 
-public class CustomApplication extends Application {
+import com.usp.dagger.*;
+
+import java.util.List;
+
+public class CustomApplication extends com.usp.dagger.DaggerApplication {
 
     private static Context sContext;
 
@@ -14,5 +17,12 @@ public class CustomApplication extends Application {
 
     public static Context getAppContext() {
         return sContext;
+    }
+
+    @Override
+    protected List<Object> getModules() {
+        List modules = super.getModules();
+        modules.add(new AppModule());
+        return modules;
     }
 }
